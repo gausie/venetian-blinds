@@ -21,6 +21,42 @@ const SQUASHED_SLATS = [
   [0x000000, 0x000000, 0x000000, 0x000000, 0x000000, 0x000000, 0x000000, 0xffffff],
   [0x000000, 0x000000, 0x000000, 0x000000, 0x000000, 0x000000, 0x000000, 0x000000],
 ] as const;
+/** Lines of each section of the blinds, top to bottom, when raised by `raised` lines */
+function sections(raised: number) {
+  // Every 8 lines raised another slat is fully squashed onto the stack, and
+  // the remainder is how far the next one has been squashed
+  const stackedSlats = Math.floor(raised / SLAT.length);
+  const squashedRows = raised % SLAT.length;
+  let remaining = BLINDS_LINES;
+  const take = (wanted: number) => {
+    const lines = Math.min(remaining, wanted);
+    remaining -= lines;
+    return lines;
+  };
+  // The original gives the hanging slats a line back once any are stacked
+  const slats = take(BLINDS_LINES - stackedSlats * SLAT.length + (stackedSlats > 0 ? 1 : 0));
+  const squashed = take(SLAT.length - squashedRows);
+  // One edge-on line per stacked slat, plus the bottom rail
+  const stacked = take(stackedSlats + 1);
+  return { stackedSlats, squashedRows, slats, squashed, stacked, reachesSill: remaining === 0 };
+}
+
+/** Lines from the top of the window to below the bottom rail */
+export function railY(raised: number) {
+  const { slats, squashed, stacked } = sections(raised);
+  return 1 + slats + squashed + stacked;
+}
+
+/**
+ * The position that brings the bottom rail to `y`, or as close above it as it
+ * gets; the rail doesn't move evenly as the blinds rise
+ */
+export function raisedForRailY(y: number) {
+  let raised = 0;
+  while (raised < MAX_RAISED && railY(raised) > y) raised++;
+  return raised;
+}
+
 /** Slats stacked on the bottom rail alternate edge-on white and black */
 const STACKED_SLAT = [0xffffff, 0x000000];
 
@@ -59,17 +95,10 @@ export class Blinds extends Container {
     if (raised === this.raised) return;
     this.raised = raised;
 
-    // Every 8 lines raised another slat is fully squashed onto the stack, and
-    // the remainder is how far the next one has been squashed
-    const stackedSlats = Math.floor(raised / SLAT.length);
-    const squashedRows = raised % SLAT.length;
-
+    const { stackedSlats, squashedRows, slats, squashed, stacked, reachesSill } = sections(raised);
     let y = 1;
-    let remaining = BLINDS_LINES;
     let lowest: TilingSprite | undefined;
-    const place = (sprite: TilingSprite, wanted: number) => {
-      const lines = Math.min(remaining, wanted);
-      remaining -= lines;
+    const place = (sprite: TilingSprite, lines: number) => {
       sprite.visible = lines > 0;
       sprite.y = y;
       sprite.height = lines;
@@ -77,17 +106,15 @@ export class Blinds extends Container {
       if (lines > 0) lowest = sprite;
     };
 
-    // The original gives the hanging slats a line back once any are stacked
-    place(this.slats, BLINDS_LINES - stackedSlats * SLAT.length + (stackedSlats > 0 ? 1 : 0));
+    place(this.slats, slats);
     this.squashed.texture = SQUASHED_TEXTURES[squashedRows] ?? Texture.EMPTY;
-    place(this.squashed, SLAT.length - squashedRows);
-    // One edge-on line per stacked slat, plus the bottom rail
+    place(this.squashed, squashed);
     this.stacked.tilePosition.y = stackedSlats % 2;
-    place(this.stacked, stackedSlats + 1);
+    place(this.stacked, stacked);
 
     // When the blinds reach the bottom, the line under them repeats their last line
     this.sill.visible = false;
-    if (remaining === 0 && lowest) {
+    if (reachesSill && lowest) {
       this.sill.visible = true;
       this.sill.texture = lowest.texture;
       this.sill.tilePosition.y = lowest.tilePosition.y - (lowest.height - 1);

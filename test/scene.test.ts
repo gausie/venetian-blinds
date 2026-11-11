@@ -1,7 +1,6 @@
 import { expect, test } from "vitest";
-import { SCREEN } from "../src/app";
 import screenshotUrl from "./fixtures/archive-screenshot.png?url";
-import { renderPixels } from "./render-pixels";
+import { renderPixels, SCREEN } from "./render-pixels";
 
 async function loadScreenshot() {
   const bitmap = await createImageBitmap(await (await fetch(screenshotUrl)).blob());

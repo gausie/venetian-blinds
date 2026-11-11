@@ -10,7 +10,6 @@ const CORD = {
   colour: 0x000000,
 } as const;
 
-/** Hangs the full height of the window whatever the blinds do */
 export function createCord() {
   const cord = new Graphics();
   for (const x of CORD.strands) cord.rect(x, 0, 1, SILL_Y);
