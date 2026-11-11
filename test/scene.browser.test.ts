@@ -1,6 +1,5 @@
 import { expect, test } from "vitest";
-import { createState } from "../src/demo";
-import { SCREEN } from "../src/layout";
+import { SCREEN } from "../src/app";
 import screenshotUrl from "./fixtures/archive-screenshot.png?url";
 import { renderPixels } from "./render-pixels";
 
@@ -14,7 +13,7 @@ async function loadScreenshot() {
 }
 
 test("closed blinds match the archive.org screenshot pixel for pixel", async () => {
-  const pixels = await renderPixels(createState());
+  const pixels = await renderPixels(0);
 
   // The screenshot is scaled 4x horizontally and 2x vertically
   const shot = await loadScreenshot();

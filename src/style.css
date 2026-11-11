@@ -37,8 +37,7 @@ button {
   touch-action: none;
   user-select: none;
 }
-button:active,
-button[aria-pressed="true"] {
+button:active {
   background: #444;
 }
 p {

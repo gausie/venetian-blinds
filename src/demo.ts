@@ -3,7 +3,6 @@ export type Input = {
   down: boolean;
   select: boolean;
   reset: boolean;
-  blackAndWhite: boolean;
 };
 
 // Mirrors the RAM the original keeps; names reference the zero-page addresses
@@ -16,24 +15,19 @@ export type DemoState = {
   selectDelay: number;
   /** $80: game number toggled by SELECT; has no visible effect */
   game: number;
-  /** $87: colour mask, $0F strips hue when the TV switch is on B&W */
-  colourMask: number;
 };
 
-export const MAX_RAISED = 0xa0;
+export const MAX_RAISED = 160;
 
 export const createState = (): DemoState => ({
   raised: 0,
   locked: 0,
   selectDelay: 0,
   game: 0,
-  colourMask: 0xff,
 });
 
 // Runs once per frame during overscan, in the same order as the ROM
 export function update(state: DemoState, input: Input): void {
-  state.colourMask = input.blackAndWhite ? 0x0f : 0xff;
-
   if (input.reset) {
     // RESET re-enters the cold start but only clears RAM from $C0 up
     state.raised = 0;

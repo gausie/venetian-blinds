@@ -1,7 +1,11 @@
 import type { Input } from "./demo";
 
-// Stella-style console switches: F1 select, F2 reset, F3/F4 colour/B&W
-const KEY_MAP: Partial<Record<string, string>> = {
+type Control = "up" | "down" | "select" | "reset";
+const CONTROLS: readonly Control[] = ["up", "down", "select", "reset"];
+const isControl = (value: string | undefined): value is Control => CONTROLS.includes(value as Control);
+
+// Stella-style console switches: F1 select, F2 reset
+const KEYS: Partial<Record<string, Control>> = {
   ArrowUp: "up",
   KeyW: "up",
   ArrowDown: "down",
@@ -10,40 +14,27 @@ const KEY_MAP: Partial<Record<string, string>> = {
   F2: "reset",
 };
 
-/** Merges keyboard, on-screen buttons and the first gamepad into one joystick */
-export function createInput(): () => Input {
-  const keys = new Set<string>();
-  const held = new Set<string>();
-  let blackAndWhite = false;
-  const bwButton = document.querySelector<HTMLButtonElement>('[data-control="bw"]');
-  const setBlackAndWhite = (value: boolean) => {
-    blackAndWhite = value;
-    bwButton?.setAttribute("aria-pressed", String(value));
-  };
+// Standard gamepad mapping: d-pad, back/select and start
+const PAD_BUTTONS: Record<Control, number> = { up: 12, down: 13, select: 8, reset: 9 };
 
+/** Merges keyboard, on-screen buttons and the first gamepad into one joystick and console */
+export function createInput(): () => Input {
+  const held = new Set<Control>();
   addEventListener("keydown", (e) => {
-    if (e.code === "F3") setBlackAndWhite(false);
-    else if (e.code === "F4") setBlackAndWhite(true);
-    else {
-      const control = KEY_MAP[e.code];
-      if (!control) return;
-      keys.add(control);
-    }
+    const control = KEYS[e.code];
+    if (!control) return;
+    held.add(control);
     e.preventDefault();
   });
   addEventListener("keyup", (e) => {
-    const control = KEY_MAP[e.code];
-    if (control) keys.delete(control);
+    const control = KEYS[e.code];
+    if (control) held.delete(control);
   });
-  addEventListener("blur", () => keys.clear());
+  addEventListener("blur", () => held.clear());
 
-  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-control]")) {
+  for (const button of document.querySelectorAll<HTMLElement>("[data-control]")) {
     const control = button.dataset.control;
-    if (!control) continue;
-    if (control === "bw") {
-      button.addEventListener("click", () => setBlackAndWhite(!blackAndWhite));
-      continue;
-    }
+    if (!isControl(control)) continue;
     const release = () => held.delete(control);
     button.addEventListener("pointerdown", (e) => {
       held.add(control);
@@ -54,15 +45,14 @@ export function createInput(): () => Input {
   }
 
   return () => {
-    const pad = navigator.getGamepads?.().find((p) => p);
-    const axis = pad?.axes[1] ?? 0;
-    const on = (name: string) => keys.has(name) || held.has(name);
+    const pad = navigator.getGamepads().find((p) => p !== null);
+    const stick = pad?.axes[1] ?? 0;
+    const pressed = (control: Control) => held.has(control) || pad?.buttons[PAD_BUTTONS[control]]?.pressed === true;
     return {
-      up: on("up") || axis < -0.5 || !!pad?.buttons[12]?.pressed,
-      down: on("down") || axis > 0.5 || !!pad?.buttons[13]?.pressed,
-      select: on("select") || !!pad?.buttons[8]?.pressed,
-      reset: on("reset") || !!pad?.buttons[9]?.pressed,
-      blackAndWhite,
+      up: pressed("up") || stick < -0.5,
+      down: pressed("down") || stick > 0.5,
+      select: pressed("select"),
+      reset: pressed("reset"),
     };
   };
 }

@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { createState, type Input, MAX_RAISED, update } from "../src/demo";
 
-const idle: Input = { up: false, down: false, select: false, reset: false, blackAndWhite: false };
+const idle: Input = { up: false, down: false, select: false, reset: false };
 
 test("up raises the blinds one line per frame, clamped at the top", () => {
   const s = createState();
