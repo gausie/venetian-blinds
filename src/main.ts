@@ -1,8 +1,12 @@
-import { Application } from "pixi.js";
+import { Application, Texture } from "pixi.js";
 import { createInput } from "./input";
 import { MAX_RAISED, railY, raisedForRailY } from "./scene/Blinds";
 import { VenetianBlinds } from "./scene/VenetianBlinds";
 import "./style.css";
+
+// Opaque white is already premultiplied; saying so stops Firefox warning on
+// every Graphics fill's texture upload
+Texture.WHITE.source.alphaMode = "premultiplied-alpha";
 
 const app = new Application();
 await app.init({ resizeTo: window, resolution: devicePixelRatio, autoDensity: true, roundPixels: true });
