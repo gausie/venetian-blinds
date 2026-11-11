@@ -2,7 +2,6 @@ import { Container, Graphics } from "pixi.js";
 import { createLogo } from "./Logo";
 import { Window } from "./Window";
 
-/** Where the playfield sits within the screen */
 const PLAYFIELD = { x: 8, y: 20, width: 160 } as const;
 const WALL = { height: 188, colour: 0x854a00 } as const;
 

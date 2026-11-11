@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { MAX_RAISED } from "../src/demo";
+import { MAX_RAISED } from "../src/scene/Blinds";
 import { renderPixels } from "./render-pixels";
 
 // Hashes of every distinct frame, recorded when the Pixi scene was verified

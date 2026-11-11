@@ -1,11 +1,11 @@
 import { type Application, RenderTexture } from "pixi.js";
-import { createPixelApp, SCREEN } from "../src/app";
+import { createApp, SCREEN } from "../src/app";
 import { VenetianBlinds } from "../src/scene/VenetianBlinds";
 
 let ready: Promise<{ app: Application; scene: VenetianBlinds }> | undefined;
 
 async function setup() {
-  const app = await createPixelApp();
+  const app = await createApp();
   const scene = new VenetianBlinds();
   app.stage.addChild(scene);
   return { app, scene };

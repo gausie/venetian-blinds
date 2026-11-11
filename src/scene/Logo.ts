@@ -1,7 +1,6 @@
 import { Sprite } from "pixi.js";
 import { rgba, textureFromRgba } from "../textures";
 
-/** $F35E-$F37E: four 8px player copies laid side by side */
 const LOGO = {
   x: 21,
   y: 189,

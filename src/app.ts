@@ -1,20 +1,10 @@
-import { Application, type ApplicationOptions, TextureStyle } from "pixi.js";
+import { Application, type ApplicationOptions } from "pixi.js";
 
-/** Canvas size: 160 visible pixels with an 8px border either side, framed like the archive.org player */
+/** Framed like the archive.org player: 160px playfield with an 8px border either side */
 export const SCREEN = { width: 176, height: 223 } as const;
 
-/** A Pixi app at the native resolution, with nothing that would blur or blend pixels */
-export async function createPixelApp(options: Partial<ApplicationOptions> = {}) {
-  TextureStyle.defaultOptions.scaleMode = "nearest";
+export async function createApp(options: Partial<ApplicationOptions> = {}) {
   const app = new Application();
-  await app.init({
-    width: SCREEN.width,
-    height: SCREEN.height,
-    background: 0x000000,
-    antialias: false,
-    resolution: 1,
-    roundPixels: true,
-    ...options,
-  });
+  await app.init({ width: SCREEN.width, height: SCREEN.height, ...options });
   return app;
 }

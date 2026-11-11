@@ -1,10 +1,5 @@
 import { Graphics } from "pixi.js";
 
-/**
- * The view out of the window, drawn behind the blinds. The frame is the
- * playfield ($0E reflected); the pane is quad-width player 1, one band per
- * run of lines in $F23E (colours) and $F2CE (graphics, 4px per character).
- */
 const VIEW = {
   // Starts below the window's top edge
   y: 1,
@@ -29,16 +24,14 @@ const VIEW = {
     { lines: 52, colour: 0x387200, gfx: "########" },
     { lines: 16, colour: 0x493500, gfx: "########" }, // sill, including the line under the blinds
   ],
-  /** Missile 0, enabled for kernel lines 123 down to 16 */
   mullion: { x: 32, y: 1 + 53, height: 108, colour: 0x000000 },
 } as const;
 
-/** Runs of "#" in a row of player graphics, as [start, length] in cells */
+/** Runs of "#" as [start, length] */
 function runs(gfx: string) {
   return [...gfx.matchAll(/#+/g)].map((m) => [m.index, m[0].length] as const);
 }
 
-/** The view out of the window: fixed in place, with the blinds drawn over it */
 export function createView() {
   const view = new Graphics();
   const { frame, pane, bands, mullion } = VIEW;
