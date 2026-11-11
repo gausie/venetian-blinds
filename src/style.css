@@ -1,4 +1,6 @@
-:root { color-scheme: dark; }
+:root {
+  color-scheme: dark;
+}
 body {
   margin: 0;
   min-height: 100vh;
@@ -8,7 +10,9 @@ body {
   gap: 16px;
   background: #111;
   color: #bbb;
-  font: 14px/1.4 system-ui, sans-serif;
+  font:
+    14px / 1.4 system-ui,
+    sans-serif;
 }
 #screen {
   /* 2:1 pixel aspect, as on an NTSC set */
@@ -16,7 +20,13 @@ body {
   aspect-ratio: 704 / 446;
   image-rendering: pixelated;
 }
-.controls { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding: 0 16px; }
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  padding: 0 16px;
+}
 button {
   font: inherit;
   padding: 8px 14px;
@@ -27,5 +37,12 @@ button {
   touch-action: none;
   user-select: none;
 }
-button:active, button[aria-pressed="true"] { background: #444; }
-p { margin: 0; text-align: center; padding: 0 16px; }
+button:active,
+button[aria-pressed="true"] {
+  background: #444;
+}
+p {
+  margin: 0;
+  text-align: center;
+  padding: 0 16px;
+}

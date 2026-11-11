@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { MAX_RAISED, createState, update, type Input } from "../src/demo";
+import { createState, type Input, MAX_RAISED, update } from "../src/demo";
 
 const idle: Input = { up: false, down: false, select: false, reset: false, blackAndWhite: false };
 

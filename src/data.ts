@@ -19,7 +19,7 @@ export const SCENE_COLOUR = runs([
   [0x58, 2],
   [0x68, 2],
   [0x78, 2],
-  [0x88, 14], // sky
+  [0x88, 16], // sky
   [0x12, 53], // head of the frame
 ]);
 
@@ -51,4 +51,4 @@ export const LOGO = [
 ];
 
 // $F740: COLUP0, COLUP1, COLUPF, COLUBK, logo-strip background
-export const BASE_COLOURS = [0x48, 0x48, 0x00, 0x24, 0x00];
+export const BASE_COLOURS = [0x48, 0x48, 0x00, 0x24, 0x00] as const;

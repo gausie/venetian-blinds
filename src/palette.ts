@@ -21,7 +21,7 @@ const IQ: [number, number][] = [
 
 const channel = (v: number) => Math.round(255 * Math.min(1, Math.max(0, v) ** 0.9));
 
-// Packed as 0xAABBGGRR so it can be written straight into a Uint32Array over ImageData
+// Packed as 0xRRGGBB
 export const PALETTE: Uint32Array = (() => {
   const out = new Uint32Array(128);
   IQ.forEach(([i, q], hue) => {
@@ -30,10 +30,10 @@ export const PALETTE: Uint32Array = (() => {
       const r = channel(y + 0.956 * i + 0.621 * q);
       const g = channel(y - 0.272 * i - 0.647 * q);
       const b = channel(y - 1.106 * i + 1.703 * q);
-      out[hue * 8 + lum] = (0xff << 24) | (b << 16) | (g << 8) | r;
+      out[hue * 8 + lum] = (r << 16) | (g << 8) | b;
     }
   });
   return out;
 })();
 
-export const colour = (tiaColour: number) => PALETTE[(tiaColour & 0xff) >> 1];
+export const hex = (tiaColour: number) => PALETTE[(tiaColour & 0xff) >> 1] ?? 0;
