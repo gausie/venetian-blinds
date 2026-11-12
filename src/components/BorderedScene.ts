@@ -36,13 +36,17 @@ export abstract class BorderedScene extends Container {
   private readonly wallMask = new Graphics();
   private readonly logo = createLogo();
   private readonly devBorder = new Graphics();
+  private readonly mirrored: boolean;
   private readonly lids = new Eyelids();
   private realSecondsAwake: number | undefined;
   /** The whole screen, border and all, in the scene's own pixels */
   protected screen: Size = { width: 0, height: 0 };
 
-  constructor() {
+  /** `mirrored` shows the logo back to front at the right, as if seen from the other side */
+  constructor({ mirrored = false } = {}) {
     super();
+    this.mirrored = mirrored;
+    if (mirrored) this.logo.scale.x = -1;
     // Scenes take pointer events from anywhere on screen, not just their drawn parts
     this.eventMode = "static";
     this.wall.position.set(BORDER.x, BORDER.top);
@@ -82,11 +86,11 @@ export abstract class BorderedScene extends Container {
 
     const wall = { width: width - 2 * BORDER.x, height: height - BORDER.top - BORDER.bottom };
     this.wallMask.clear().rect(BORDER.x, BORDER.top, wall.width, wall.height).fill(0xffffff);
-    this.logo.position.set(
-      BORDER.x + Math.min(LOGO_OFFSET.x, Math.round((wall.width * LOGO_OFFSET.x) / 160)),
-      BORDER.top + wall.height + LOGO_OFFSET.y,
-    );
-    this.devBorder.position.copyFrom(this.logo.position);
+    const inset = BORDER.x + Math.min(LOGO_OFFSET.x, Math.round((wall.width * LOGO_OFFSET.x) / 160));
+    const y = BORDER.top + wall.height + LOGO_OFFSET.y;
+    // Flipped, the logo extends left from its x
+    this.logo.position.set(this.mirrored ? width - inset : inset, y);
+    this.devBorder.position.set(this.mirrored ? width - inset - this.logo.width : inset, y);
     this.lids.layout(wall);
     this.layoutWall(wall);
   }

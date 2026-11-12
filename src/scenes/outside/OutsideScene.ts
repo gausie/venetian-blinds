@@ -30,7 +30,7 @@ export class OutsideScene extends BorderedScene {
   private readonly jumpscare: Jumpscare;
 
   constructor(context: SceneContext) {
-    super();
+    super({ mirrored: true });
     this.context = context;
     this.jumpscare = new Jumpscare({
       breakThrough: () => {

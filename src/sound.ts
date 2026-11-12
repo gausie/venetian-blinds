@@ -34,10 +34,20 @@ export function unlockAudio() {
   return audio;
 }
 
-// iOS only counts some gestures, like a touch ending, so try on every kind until it takes
+// Safari otherwise treats this as ringer audio, which the silent switch mutes
+const session = (navigator as { audioSession?: { type: string } }).audioSession;
+if (session) session.type = "playback";
+
+// iOS only counts some gestures, like a touch ending, and older versions only
+// unlock once something actually plays inside one, so play silence on each until it takes
 for (const gesture of ["pointerdown", "pointerup", "touchend", "click", "keydown"]) {
   addEventListener(gesture, function unlock() {
-    if (unlockAudio().state === "running") removeEventListener(gesture, unlock);
+    const ctx = unlockAudio();
+    const silence = ctx.createBufferSource();
+    silence.buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
+    silence.connect(ctx.destination);
+    silence.start();
+    if (ctx.state === "running") removeEventListener(gesture, unlock);
   });
 }
 
