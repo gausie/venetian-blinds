@@ -35,7 +35,7 @@ export class EndingScene extends BorderedScene {
   private nextChew = 0;
 
   constructor(context: SceneContext) {
-    super();
+    super({ mirrored: true });
     this.wall.addChild(this.landscape, this.blades);
     this.on("pointerdown", () => {
       // One last time, the eyes open

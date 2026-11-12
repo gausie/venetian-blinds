@@ -91,7 +91,7 @@ const COLOURS = {
 
 type Face = keyof typeof FACES;
 const ORDER = Object.keys(FACES) as Face[];
-const NEXT_STAGE_CHANCE = [0.1, 0.5, 0.75, 0.75] as const;
+const NEXT_STAGE_CHANCE = [0.25, 0.5, 0.75, 0.75] as const;
 const BLEEDS_FROM = ORDER.indexOf("flayed");
 const POOLS_FROM = ORDER.indexOf("skeletal");
 
