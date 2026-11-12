@@ -1,7 +1,9 @@
 import { Application, Texture } from "pixi.js";
-import { createInput } from "./input";
-import { MAX_RAISED, railY, raisedForRailY } from "./scene/Blinds";
-import { VenetianBlinds } from "./scene/VenetianBlinds";
+import { Director } from "./director";
+import { createPointer } from "./pointer";
+import { EndingScene } from "./scenes/ending/EndingScene";
+import { InsideScene } from "./scenes/inside/InsideScene";
+import { OutsideScene } from "./scenes/outside/OutsideScene";
 import "./style.css";
 
 // Opaque white is already premultiplied; saying so stops Firefox warning on
@@ -11,28 +13,26 @@ Texture.WHITE.source.alphaMode = "premultiplied-alpha";
 const app = new Application();
 await app.init({ resizeTo: window, resolution: devicePixelRatio, autoDensity: true, roundPixels: true });
 document.body.append(app.canvas);
+addEventListener("contextmenu", (e) => e.preventDefault());
 
-const scene = new VenetianBlinds();
-app.stage.addChild(scene);
-const fitScene = () => scene.fit(app.screen.width, app.screen.height);
-fitScene();
-app.renderer.on("resize", fitScene);
+const director = new Director(
+  app,
+  {
+    inside: (context) => new InsideScene(context),
+    outside: (context) => new OutsideScene(context),
+    ending: (context) => new EndingScene(context),
+  },
+  { initial: "inside", showPointer: createPointer(app) },
+);
 
-let raised = 0;
-const readInput = createInput(app, scene);
-
-let dragStartRail: number | undefined;
-
-// Runs before Pixi renders each frame, so input shows up in the very next frame
-app.ticker.add(({ deltaTime }) => {
-  const { direction, dragged } = readInput();
-  if (dragged === undefined) {
-    dragStartRail = undefined;
-    // deltaTime is in 60Hz frames, and the blinds move a line a frame
-    raised = Math.min(MAX_RAISED, Math.max(0, raised + direction * deltaTime));
-  } else {
-    dragStartRail ??= railY(Math.round(raised));
-    raised = raisedForRailY(dragStartRail + dragged);
-  }
-  scene.update(Math.round(raised));
-});
+// Hot reloads hand the story over to the re-run module rather than starting again
+if (import.meta.hot) {
+  const saved: ReturnType<Director["saveStory"]> | undefined = import.meta.hot.data.story;
+  if (saved) director.restoreStory(saved);
+  import.meta.hot.dispose((data) => {
+    data.story = director.saveStory();
+    director.stop();
+    app.destroy({ removeView: true }, { children: true });
+  });
+  import.meta.hot.accept();
+}

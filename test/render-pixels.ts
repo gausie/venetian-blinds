@@ -1,15 +1,15 @@
 import { Application, RenderTexture } from "pixi.js";
-import { VenetianBlinds } from "../src/scene/VenetianBlinds";
+import { InsideScene } from "../src/scenes/inside/InsideScene";
 
 /** The archive.org player's screen size, where the scene should match the original exactly */
 export const SCREEN = { width: 176, height: 223 } as const;
 
-let ready: Promise<{ app: Application; scene: VenetianBlinds }> | undefined;
+let ready: Promise<{ app: Application; scene: InsideScene }> | undefined;
 
 async function setup() {
   const app = new Application();
   await app.init({ width: SCREEN.width, height: SCREEN.height });
-  const scene = new VenetianBlinds();
+  const scene = new InsideScene({ go() {}, restart() {}, showPointer() {} });
   scene.layout(SCREEN.width, SCREEN.height);
   app.stage.addChild(scene);
   return { app, scene };

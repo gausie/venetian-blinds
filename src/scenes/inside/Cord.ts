@@ -1,5 +1,5 @@
 import { Graphics } from "pixi.js";
-import { BLINDS_LINES } from "./Blinds";
+import { BLINDS_LINES } from "../../components/Blinds";
 
 /** The line under the blinds, where the cord loops back up */
 const SILL_Y = 1 + BLINDS_LINES;

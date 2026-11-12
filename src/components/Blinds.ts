@@ -1,15 +1,18 @@
 import { Container, Graphics, Texture, TilingSprite } from "pixi.js";
-import { rgba, textureFromRgba } from "../textures";
+import { rgba, textureFromRgba } from "../art/textures";
 
 const WIDTH = 64;
 
 /** Lines the blinds can cover below the window's top edge */
 export const BLINDS_LINES = 176;
 
+/** The blinds' top edge, slats, and the line under them, when fully down */
+export const BLINDS_SIZE = { width: WIDTH, height: 1 + BLINDS_LINES + 1 } as const;
+
 /** How far the blinds can be raised, in lines */
 export const MAX_RAISED = 160;
 
-const SLAT = [0x000000, 0x2c2c2c, 0x535353, 0x777777, 0x9a9a9a, 0xbcbcbc, 0xdedede, 0xffffff];
+export const SLAT = [0x000000, 0x2c2c2c, 0x535353, 0x777777, 0x9a9a9a, 0xbcbcbc, 0xdedede, 0xffffff];
 /** The slat being squashed onto the stack, by how many lines it has been squashed */
 const SQUASHED_SLATS = [
   SLAT,
@@ -81,8 +84,10 @@ export class Blinds extends Container {
   private readonly posts = new Graphics();
   private raised = -1;
 
-  constructor() {
+  /** `posts`: the supports the slats hang from, only seen from inside */
+  constructor({ posts = true } = {}) {
     super();
+    this.posts.visible = posts;
     // The window's top edge, above the first slat
     const edge = new Graphics().rect(0, 0, WIDTH, 1).fill(0x000000);
     for (const x of POSTS.offsets) this.posts.rect(x, 0, POSTS.width, 1);

@@ -1,4 +1,5 @@
 import { Graphics } from "pixi.js";
+import { WALL_COLOUR } from "../../palette";
 
 const VIEW = {
   // Starts below the window's top edge
@@ -26,6 +27,12 @@ const VIEW = {
   ],
   mullion: { x: 32, y: 1 + 53, height: 108, colour: 0x000000 },
 } as const;
+
+/** Sky to grass, for drawing elsewhere; where gfx has a ".", the wall shows through */
+export const LANDSCAPE = { bands: VIEW.bands.slice(1, 14), cell: VIEW.pane.cell, gap: WALL_COLOUR } as const;
+
+/** The glass, below the top of the frame and between the frame's sides */
+export const GLASS = { x: 16, y: 1 + 53, width: 32, height: 108 } as const;
 
 /** Runs of "#" as [start, length] */
 function runs(gfx: string) {

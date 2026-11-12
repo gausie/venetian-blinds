@@ -10,3 +10,9 @@ canvas {
   display: block;
   touch-action: none;
 }
+/* Holding on the glass shouldn't select, magnify or pop up a menu on phones */
+body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}

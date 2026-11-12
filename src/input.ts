@@ -1,4 +1,4 @@
-import type { Application, Container } from "pixi.js";
+import type { Container } from "pixi.js";
 
 // Standard gamepad mapping: d-pad up and down
 const PAD_BUTTONS = { up: 12, down: 13 } as const;
@@ -18,8 +18,8 @@ export type Input = {
   dragged: number | undefined;
 };
 
-/** Drags are measured in `scene`'s own pixels */
-export function createInput(app: Application, scene: Container): () => Input {
+/** Drags start on `scene` and are measured in its own pixels */
+export function createInput(scene: Container): () => Input {
   const held = new Set<Control>();
   addEventListener("keydown", (e) => {
     const control = KEYS[e.code];
@@ -34,22 +34,18 @@ export function createInput(app: Application, scene: Container): () => Input {
   addEventListener("blur", () => held.clear());
 
   let drag: { startY: number; y: number } | undefined;
-  const { stage } = app;
-  stage.eventMode = "static";
-  stage.hitArea = app.screen;
-  stage.cursor = "ns-resize";
-  stage.on("pointerdown", (e) => {
+  scene.on("pointerdown", (e) => {
     const { y } = e.getLocalPosition(scene);
     drag = { startY: y, y };
   });
-  stage.on("globalpointermove", (e) => {
+  scene.on("globalpointermove", (e) => {
     if (drag) drag.y = e.getLocalPosition(scene).y;
   });
   const release = () => {
     drag = undefined;
   };
-  stage.on("pointerup", release);
-  stage.on("pointerupoutside", release);
+  scene.on("pointerup", release);
+  scene.on("pointerupoutside", release);
 
   return () => {
     const pad = navigator.getGamepads().find((p) => p !== null);
