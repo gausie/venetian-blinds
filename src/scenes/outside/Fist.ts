@@ -1,51 +1,44 @@
 import { Container, Graphics, Sprite } from "pixi.js";
+import { CSS_PIXELS_PER_HAND_PIXEL, FIST } from "../../art/hand";
 import { artTexture } from "../../art/textures";
-
-// A knuckle-first fist, seen from behind
-const FIST = {
-  art: [
-    "..oooooooo..",
-    ".oSSoSSoSSo.",
-    "oSSSoSSoSSSo",
-    "oSSSSSSSSSSo",
-    "oSSSSSSSSSso",
-    "oSSSSSSSSsso",
-    ".oSSSSSSsso.",
-    "..oSSSSsso..",
-    "...oSSSso...",
-    "...oSSsso...",
-  ],
-  colours: { o: 0x2a1408, S: 0xe0a070, s: 0xb07040 },
-} as const;
 
 /** Three raps, in seconds from the knock */
 export const RAPS = [0, 0.18, 0.36];
 const RAP_LENGTH = 0.09;
-const DURATION = 0.7;
-// Scene pixels are twice as wide as they are tall, and the fist is about half a brick wide
-const SIZE = { x: 2, y: 4 } as const;
+const LINGER_AFTER_LAST_RAP = 0.34;
+const PULL_BACK_PIXELS = 1;
+/** The fist art is a little bigger than the pointer's, so bring it down to match */
+const SHRINK = 0.85;
 
+/** The pointer, balled up, knocking where it was; drawn in the hand's art pixels */
 export class Fist extends Container {
   private readonly fist = new Sprite({ texture: artTexture(FIST.art, FIST.colours) });
   private readonly impact = new Graphics();
   private age: number | undefined;
+  private raps: readonly number[] = [];
+  private endsAt = 0;
 
   constructor() {
     super();
-    this.fist.anchor.set(0.5);
+    // Strike lines fanning out above the knuckles
     this.impact
-      .rect(-20, -1, 5, 2)
-      .rect(16, -1, 5, 2)
-      .rect(-14, -26, 2, 6)
-      .rect(13, -26, 2, 6)
-      .rect(-14, 21, 2, 6)
-      .rect(13, 21, 2, 6)
+      .rect(10, -4, 1, 3)
+      .rect(5, -3, 1, 1)
+      .rect(6, -2, 1, 1)
+      .rect(15, -3, 1, 1)
+      .rect(14, -2, 1, 1)
       .fill(0xffffff);
     this.addChild(this.impact, this.fist);
     this.visible = false;
   }
 
-  start(x: number, y: number) {
+  start(x: number, y: number, rapSeconds: readonly number[]) {
+    this.raps = rapSeconds;
+    this.endsAt = (rapSeconds.at(-1) ?? 0) + LINGER_AFTER_LAST_RAP;
+    // Undo the scene's scaling so it's the pointer's size whatever the screen
+    const scene = this.parent?.scale ?? { x: 1, y: 1 };
+    const size = CSS_PIXELS_PER_HAND_PIXEL * SHRINK;
+    this.scale.set(size / scene.x, size / scene.y);
     this.position.set(x, y);
     this.age = 0;
     this.visible = true;
@@ -54,17 +47,14 @@ export class Fist extends Container {
   tick(seconds: number) {
     if (this.age === undefined) return;
     this.age += seconds;
-    const age = this.age;
-    if (age > DURATION) {
+    const { age, raps } = this;
+    if (age > this.endsAt) {
       this.age = undefined;
       this.visible = false;
       return;
     }
-    const rapping = RAPS.some((t) => age >= t && age < t + RAP_LENGTH);
-    // Pulled back, the fist is bigger and further from the wall
-    const reach = rapping ? 1 : 1.25;
-    this.fist.scale.set(SIZE.x * reach, SIZE.y * reach);
-    this.fist.y = rapping ? 0 : -6;
+    const rapping = raps.some((t) => age >= t && age < t + RAP_LENGTH);
+    this.fist.position.set(rapping ? 0 : -PULL_BACK_PIXELS);
     this.impact.visible = rapping;
   }
 }

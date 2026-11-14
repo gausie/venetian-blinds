@@ -54,9 +54,8 @@ export class EndingScene extends BorderedScene {
     drawBlades(this.blades, wall);
   }
 
-  /** Real time; it's not something to hurry */
-  tick({ deltaMS, speed }: Frame) {
-    this.elapsed += deltaMS / 1000 / speed;
+  tick({ deltaMS }: Frame) {
+    this.elapsed += deltaMS / 1000;
     const t = this.elapsed;
     while (this.cued < CUES.length && t >= (CUES[this.cued]?.at ?? Infinity)) CUES[this.cued++]?.play();
     const [start, stop] = TIMELINE.feeding;
@@ -67,6 +66,8 @@ export class EndingScene extends BorderedScene {
       this.nextChew = t + (0.7 - 0.45 * frenzy) * (0.7 + Math.random() * 0.6);
     }
     this.setLids(this.shut(t));
+    // Gone with you, so the unmirrored one at the restart reads as a fresh start
+    this.showLogo(t < TIMELINE.death);
   }
 
   /** How shut the eyes are, from 0 (wide open) to 1 */

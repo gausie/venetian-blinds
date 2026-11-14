@@ -1,6 +1,5 @@
 import { Container, Graphics, Rectangle } from "pixi.js";
 import { ease } from "../art/ease";
-import { devMode, devModeAvailable } from "../devMode";
 import { BLINDS_SIZE } from "./Blinds";
 import { Eyelids } from "./Eyelids";
 import { createLogo } from "./Logo";
@@ -22,12 +21,8 @@ const MIN_SIZE = {
 
 export type Size = { width: number; height: number };
 
-/**
- * One frame's worth of time: `deltaTime` in 60Hz frames, `deltaMS` in
- * milliseconds, both sped up by `speed` in dev mode. Divide by `speed` for
- * anything that should keep to real time.
- */
-export type Frame = { deltaTime: number; deltaMS: number; speed: number };
+/** One frame's worth of time: `deltaTime` in 60Hz frames, `deltaMS` in milliseconds */
+export type Frame = { deltaTime: number; deltaMS: number };
 
 /** The original's black border and logo, around a wall each scene fills. Pixels are twice as wide as tall. */
 export abstract class BorderedScene extends Container {
@@ -35,10 +30,9 @@ export abstract class BorderedScene extends Container {
   protected readonly wall = new Container();
   private readonly wallMask = new Graphics();
   private readonly logo = createLogo();
-  private readonly devBorder = new Graphics();
   private readonly mirrored: boolean;
   private readonly lids = new Eyelids();
-  private realSecondsAwake: number | undefined;
+  private secondsAwake: number | undefined;
   /** The whole screen, border and all, in the scene's own pixels */
   protected screen: Size = { width: 0, height: 0 };
 
@@ -52,22 +46,7 @@ export abstract class BorderedScene extends Container {
     this.wall.position.set(BORDER.x, BORDER.top);
     this.wall.mask = this.wallMask;
     this.lids.position.copyFrom(this.wall.position);
-    this.addChild(this.wallMask, this.wall, this.lids, this.devBorder, this.logo);
-
-    if (devModeAvailable) {
-      const { width, height } = this.logo;
-      this.devBorder.rect(-1, -1, width + 2, height + 2).stroke({ width: 1, color: 0xff0000, alignment: 1 });
-      this.devBorder.visible = devMode.on;
-      devMode.subscribe((on) => {
-        this.devBorder.visible = on;
-      });
-      this.logo.eventMode = "static";
-      this.logo.on("pointerdown", (e) => {
-        // Keep the click from knocking or dragging the blinds
-        e.stopPropagation();
-        devMode.toggle();
-      });
-    }
+    this.addChild(this.wallMask, this.wall, this.lids, this.logo);
   }
 
   /** Each pixel is 4×2 CSS pixels, or 2×1 when the window wouldn't fit */
@@ -90,15 +69,18 @@ export abstract class BorderedScene extends Container {
     const y = BORDER.top + wall.height + LOGO_OFFSET.y;
     // Flipped, the logo extends left from its x
     this.logo.position.set(this.mirrored ? width - inset : inset, y);
-    this.devBorder.position.set(this.mirrored ? width - inset - this.logo.width : inset, y);
     this.lids.layout(wall);
     this.layoutWall(wall);
   }
 
   /** Opens the eyes on this scene, from black */
   wake() {
-    this.realSecondsAwake = 0;
+    this.secondsAwake = 0;
     this.lids.shut(1);
+  }
+
+  protected showLogo(show: boolean) {
+    this.logo.visible = show;
   }
 
   /** From 0, open, to 1 */
@@ -108,16 +90,14 @@ export abstract class BorderedScene extends Container {
 
   /** Called by the director each frame; scenes do their part in `tick` */
   advance(frame: Frame) {
-    if (this.realSecondsAwake !== undefined) {
-      // Real time, dev mode or not
-      this.realSecondsAwake += frame.deltaMS / 1000 / frame.speed;
-      this.lids.shut(1 - ease(this.realSecondsAwake, WAKE_SECONDS.start, WAKE_SECONDS.open));
-      if (this.realSecondsAwake >= WAKE_SECONDS.open) this.realSecondsAwake = undefined;
+    if (this.secondsAwake !== undefined) {
+      this.secondsAwake += frame.deltaMS / 1000;
+      this.lids.shut(1 - ease(this.secondsAwake, WAKE_SECONDS.start, WAKE_SECONDS.open));
+      if (this.secondsAwake >= WAKE_SECONDS.open) this.secondsAwake = undefined;
     }
     this.tick(frame);
   }
 
-  /** Arrange the scene's components on a wall this big */
   protected abstract layoutWall(wall: Size): void;
 
   /** Called before every frame while this scene is showing */

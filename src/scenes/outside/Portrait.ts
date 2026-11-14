@@ -1,6 +1,5 @@
 import { Container, Sprite, type Texture } from "pixi.js";
 import { artTexture } from "../../art/textures";
-import { chance } from "../../chance";
 import { Blood } from "./Blood";
 
 /** Each row is two lines tall */
@@ -91,7 +90,6 @@ const COLOURS = {
 
 type Face = keyof typeof FACES;
 const ORDER = Object.keys(FACES) as Face[];
-const NEXT_STAGE_CHANCE = [0.25, 0.5, 0.75, 0.75] as const;
 const BLEEDS_FROM = ORDER.indexOf("flayed");
 const POOLS_FROM = ORDER.indexOf("skeletal");
 
@@ -144,7 +142,7 @@ export class Portrait extends Container {
   }
 
   worsen() {
-    if (this.face >= ORDER.length - 1 || !chance(NEXT_STAGE_CHANCE[this.face] ?? 0)) return;
+    if (this.face >= ORDER.length - 1) return;
     this.face++;
     this.painting.texture = this.textures[this.face] ?? this.painting.texture;
     if (this.face >= BLEEDS_FROM) this.blood.start();

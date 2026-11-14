@@ -25,7 +25,6 @@ export class Tapping extends Container {
     this.elapsed = 0;
   }
 
-  /** `seconds` should be real time, to keep in step with the sound */
   tick(seconds: number) {
     if (this.elapsed === undefined) return;
     this.elapsed += seconds;

@@ -31,7 +31,7 @@ export class OutsideWindow extends Container {
   readonly portrait = new Portrait();
   private readonly blinds = new Blinds({ posts: false });
   private readonly gore = createGore(GLASS.width, GLASS.height);
-  private readonly ritual = new Ritual();
+  readonly ritual = new Ritual();
   private readonly tapping: Tapping;
   private readonly rip = new Rip();
   private ripArmed = false;
@@ -69,7 +69,7 @@ export class OutsideWindow extends Container {
     this.addChild(frame, behind, glass, this.bars, this.broken);
   }
 
-  /** The point is in the window's own pixels */
+  /** In the window's own pixels */
   isOnGlass({ x, y }: { x: number; y: number }) {
     const gx = x - FRAME.side;
     const gy = y - FRAME.top;
@@ -118,12 +118,18 @@ export class OutsideWindow extends Container {
   }
 
   saveStory() {
-    return { portrait: this.portrait.saveStory(), ransacked: this.ransacked, ripped: this.isRipped };
+    return {
+      portrait: this.portrait.saveStory(),
+      ransacked: this.ransacked,
+      lit: this.ritual.lit,
+      ripped: this.isRipped,
+    };
   }
 
   restoreStory(state: ReturnType<OutsideWindow["saveStory"]>) {
     this.portrait.restoreStory(state.portrait);
     if (state.ransacked) this.ransack();
+    if (state.lit) this.ritual.light();
     if (state.ripped) this.tearAway();
   }
 
@@ -143,12 +149,10 @@ export class OutsideWindow extends Container {
     this.tapping.start();
   }
 
-  /** `realSeconds` is unscaled by dev mode, for anything that keeps time with sound */
-  update(raised: number, seconds: number, realSeconds: number) {
-    this.tapping.tick(realSeconds);
+  update(raised: number, seconds: number) {
+    this.tapping.tick(seconds);
     this.portrait.tick(seconds);
-    // Real time, dev mode or not
-    this.ritual.tick(realSeconds);
+    this.ritual.tick(seconds);
 
     const lowering = raised < this.lastRaised;
     this.lastRaised = raised;
@@ -159,8 +163,7 @@ export class OutsideWindow extends Container {
     }
     // While it has hold of them, the hand moves the blinds, not whoever's lowering them
     if (this.rip.active) {
-      // Real time, so it can be seen even in dev mode
-      const { x, y, done } = this.rip.tick(realSeconds);
+      const { x, y, done } = this.rip.tick(seconds);
       this.blinds.position.set(BLINDS_X - x, BLINDS_Y + y);
       if (done) this.tearAway();
       return;

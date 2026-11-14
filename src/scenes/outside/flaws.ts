@@ -20,8 +20,7 @@ export type Brick = {
   mortarLines: number;
   colour: number;
   mortar: number;
-  /** The light on this course */
-  lit: number;
+  courseLight: number;
 };
 
 /** Fills a rectangle, clipped to the brick and the joint below it */
@@ -44,7 +43,7 @@ const DRAW: Record<Flaw, (brick: Brick, paint: Paint, g: Graphics) => void> = {
     const h = 3 + roll(b.col, b.row, 9, 4);
     const x = right ? b.x1 - w : b.x0;
     const y = top ? b.top : b.bottom - h;
-    paint(x, y, w, h, mix(b.mortar, b.lit, 0.15));
+    paint(x, y, w, h, mix(b.mortar, b.courseLight, 0.15));
     paint(right ? x - 1 : x + w, top ? y : y + h - 2, 1, 2, mix(b.colour, 0x000000, 0.35));
   },
 
@@ -65,7 +64,7 @@ const DRAW: Record<Flaw, (brick: Brick, paint: Paint, g: Graphics) => void> = {
     const start = b.x0 + roll(b.col, b.row, 17, Math.max(1, b.x1 - b.x0 - 6));
     const length = 4 + roll(b.col, b.row, 18, 8);
     for (let x = start; x < start + length; x++) {
-      const colour = mix(MOSS[roll(x, b.row, 19, MOSS.length)] ?? MOSS[0], b.lit, 0.2);
+      const colour = mix(MOSS[roll(x, b.row, 19, MOSS.length)] ?? MOSS[0], b.courseLight, 0.2);
       const creep = roll(x, b.row, 20, 4);
       paint(x, b.bottom - creep, 1, creep + b.mortarLines, colour);
     }
@@ -76,15 +75,14 @@ const DRAW: Record<Flaw, (brick: Brick, paint: Paint, g: Graphics) => void> = {
     const x = b.x0 + 2 + roll(b.col, b.row, 22, Math.max(1, b.x1 - b.x0 - 4));
     const base = b.bottom + 1;
     const height = 5 + roll(b.col, b.row, 23, 6);
-    g.rect(x, base - height, 1, height).fill(mix(WEED.stem, b.lit, 0.2));
+    g.rect(x, base - height, 1, height).fill(mix(WEED.stem, b.courseLight, 0.2));
     for (let i = 2; i < height; i += 3) {
       const side = (i / 3) % 2 < 1 ? -1 : 1;
-      g.rect(x + side, base - i - 1, 1, 2).fill(mix(WEED.leaf, b.lit, 0.2));
+      g.rect(x + side, base - i - 1, 1, 2).fill(mix(WEED.leaf, b.courseLight, 0.2));
     }
   },
 };
 
-/** Kept inside a wall `wallWidth` pixels wide */
 export function drawFlaws(g: Graphics, b: Brick, flaws: ReadonlySet<Flaw>, wallWidth: number) {
   const paint: Paint = (x, y, w, h, colour) => {
     const left = Math.max(x, 0);

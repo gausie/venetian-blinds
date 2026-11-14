@@ -2,10 +2,10 @@ import { Graphics } from "pixi.js";
 import { railY } from "../../components/Blinds";
 import { BorderedScene, type Frame, type Size } from "../../components/BorderedScene";
 import type { SceneContext } from "../../director";
-import { createInput } from "../../input";
+import { createInput, type Input } from "../../input";
 import { WALL_COLOUR } from "../../palette";
 import { BlindsControl } from "./BlindsControl";
-import { Stare } from "./Stare";
+import { type Gaze, Stare } from "./Stare";
 import { GLASS } from "./View";
 import { Window } from "./Window";
 
@@ -22,12 +22,6 @@ export class InsideScene extends BorderedScene {
     super();
     this.stare = new Stare({ shake: (amount) => this.shake(amount), done: () => context.go("outside") });
     this.wall.addChild(this.backdrop, this.window);
-
-    this.on("pointerdown", (e) => {
-      if (this.blindsClear && this.window.isOnGlass(e.getLocalPosition(this.window))) this.stare.start();
-    });
-    this.on("pointerup", () => this.stare.stop());
-    this.on("pointerupoutside", () => this.stare.stop());
   }
 
   private get blindsClear() {
@@ -42,11 +36,16 @@ export class InsideScene extends BorderedScene {
     );
   }
 
+  private gaze({ pointer, pressed }: Input): Gaze {
+    // Blinds over the glass, there's nothing to look at
+    if (!this.blindsClear || !pointer || !this.window.isOnGlass(this.window.toLocal(pointer))) return "away";
+    return pressed ? "hold" : "hover";
+  }
+
   tick({ deltaTime, deltaMS }: Frame) {
-    // Dragging the blinds back over the glass breaks the spell
-    if (this.stare.active && !this.blindsClear) this.stare.stop();
-    this.stare.tick(deltaMS / 1000);
-    this.update(this.control.tick(this.readInput(), deltaTime));
+    const input = this.readInput();
+    this.stare.tick(deltaMS / 1000, this.gaze(input));
+    this.update(this.control.tick(input, deltaTime));
   }
 
   update(raised: number) {

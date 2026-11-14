@@ -15,7 +15,7 @@ export class Window extends Container {
     this.addChild(createView(), this.blinds, createCord());
   }
 
-  /** Whether a point in the window's own pixels is on the glass */
+  /** In the window's own pixels */
   isOnGlass({ x, y }: { x: number; y: number }) {
     return x >= GLASS.x && x < GLASS.x + GLASS.width && y >= GLASS.y && y < GLASS.y + GLASS.height;
   }

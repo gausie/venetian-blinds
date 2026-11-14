@@ -69,7 +69,6 @@ export class Jumpscare extends Container {
     this.elapsed = 0;
   }
 
-  /** `seconds` should be real time; it's over too quickly to speed up */
   tick(seconds: number) {
     if (this.elapsed === undefined) return;
     const before = this.elapsed;

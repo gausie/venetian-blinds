@@ -1,4 +1,5 @@
-const QUIET_SECONDS = 10;
+/** Just long enough to read as an answer to the knock */
+const QUIET_SECONDS = 1.5;
 
 /** Once armed, fires once after enough quiet */
 export class Vigil {

@@ -14,12 +14,21 @@ export const textureFromRgba = (width: number, height: number, pixels: number[])
     }),
   });
 
-/** A texture from rows of characters, each mapped to a colour; anything unmapped is clear */
-export function artTexture(art: readonly string[], colours: Readonly<Partial<Record<string, number>>>) {
+type Colours = Readonly<Partial<Record<string, number>>>;
+
+/** Rows of characters, each mapped to a colour; anything unmapped is clear and skipped */
+export function artPixels(art: readonly string[], colours: Colours) {
+  return art.flatMap((row, y) =>
+    [...row].flatMap((pixel, x) => {
+      const colour = colours[pixel];
+      return colour === undefined ? [] : [{ x, y, colour }];
+    }),
+  );
+}
+
+export function artTexture(art: readonly string[], colours: Colours) {
   const width = art[0]?.length ?? 0;
-  const pixels = [...art.join("")].flatMap((pixel) => {
-    const colour = colours[pixel];
-    return colour === undefined ? [0, 0, 0, 0] : rgba(colour);
-  });
+  const pixels = new Array<number>(width * art.length * 4).fill(0);
+  for (const { x, y, colour } of artPixels(art, colours)) pixels.splice((y * width + x) * 4, 4, ...rgba(colour));
   return textureFromRgba(width, art.length, pixels);
 }

@@ -69,20 +69,20 @@ export class BrickWall extends Graphics {
     this.clear();
     for (let row = 0; row * COURSE < height; row++) {
       const top = row * COURSE;
-      const lit = light(top / height);
+      const courseLight = light(top / height);
       const lines = Math.min(COURSE, height - top);
-      const mortar = mix(BRICK.mortar, lit, 0.25);
+      const mortar = mix(BRICK.mortar, courseLight, 0.25);
       this.rect(0, top, width, lines).fill(mortar);
       for (let col = -1; col * BRICK.width - offset(row) < width; col++) {
         const x0 = Math.max(0, col * BRICK.width + offset(row));
         const x1 = Math.min(width, (col + 1) * BRICK.width + offset(row) - 1);
         if (x1 <= x0) continue;
-        const colour = mix(BRICK.colour, lit, 0.4 + roll(col, row, 0, 3) * 0.06);
+        const colour = mix(BRICK.colour, courseLight, 0.4 + roll(col, row, 0, 3) * 0.06);
         const bottom = top + Math.min(BRICK.lines, lines);
         this.rect(x0, top, x1 - x0, bottom - top).fill(colour);
         const flaws = this.flawsByBrick.get(`${col},${row}`);
         if (!flaws) continue;
-        const brick = { col, row, x0, x1, top, bottom, mortarLines: BRICK.mortarLines, colour, mortar, lit };
+        const brick = { col, row, x0, x1, top, bottom, mortarLines: BRICK.mortarLines, colour, mortar, courseLight };
         drawFlaws(this, brick, flaws, width);
       }
     }

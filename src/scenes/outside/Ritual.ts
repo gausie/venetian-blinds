@@ -48,12 +48,21 @@ export class Ritual extends Container {
     const candles = new Graphics();
     for (const { x, y } of POINTS) candles.rect(x, y - 3, 1, 3);
     candles.fill(WAX);
+    this.flames.visible = false;
     this.addChild(chalk, candles, this.flames);
     this.flicker();
   }
 
+  get lit() {
+    return this.flames.visible;
+  }
+
+  light() {
+    this.flames.visible = true;
+  }
+
   tick(seconds: number) {
-    if (!this.visible) return;
+    if (!this.lit) return;
     this.sinceFlicker += seconds;
     if (this.sinceFlicker < FLICKER_SECONDS) return;
     this.sinceFlicker = 0;

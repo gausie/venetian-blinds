@@ -1,6 +1,5 @@
 import type { Application, Ticker } from "pixi.js";
 import type { BorderedScene } from "./components/BorderedScene";
-import { devMode } from "./devMode";
 
 export const SCENES = ["inside", "outside", "ending"] as const;
 export type SceneName = (typeof SCENES)[number];
@@ -36,8 +35,7 @@ export class Director {
     app.renderer.on("resize", () => this.fit());
     // Runs before Pixi renders each frame, so input shows up in the very next frame
     app.ticker.add(({ deltaTime, deltaMS }: Ticker) => {
-      const { speed } = devMode;
-      this.scene.advance({ deltaTime: deltaTime * speed, deltaMS: deltaMS * speed, speed });
+      this.scene.advance({ deltaTime, deltaMS });
     });
     this.show();
   }
@@ -45,11 +43,10 @@ export class Director {
   /** For carrying the story across a hot reload */
   saveStory() {
     const scenes = Object.fromEntries(SCENES.map((name) => [name, this.scenes[name].saveStory()]));
-    return { current: this.name, devMode: devMode.on, scenes };
+    return { current: this.name, scenes };
   }
 
   restoreStory(state: ReturnType<Director["saveStory"]>) {
-    devMode.set(state.devMode);
     for (const name of SCENES) {
       const saved = state.scenes[name];
       if (saved !== undefined) this.scenes[name].restoreStory(saved);

@@ -1,6 +1,6 @@
 import { Application, Texture } from "pixi.js";
 import { Director } from "./director";
-import { createPointer } from "./pointer";
+import { createPointerToggle } from "./pointer";
 import { EndingScene } from "./scenes/ending/EndingScene";
 import { InsideScene } from "./scenes/inside/InsideScene";
 import { OutsideScene } from "./scenes/outside/OutsideScene";
@@ -22,7 +22,7 @@ const director = new Director(
     outside: (context) => new OutsideScene(context),
     ending: (context) => new EndingScene(context),
   },
-  { initial: "inside", showPointer: createPointer(app) },
+  { initial: "inside", showPointer: createPointerToggle(app) },
 );
 
 // Hot reloads hand the story over to the re-run module rather than starting again
